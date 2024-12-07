@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Squat & Push-Up Validator</title>
+    <style>
+        /* General body styles for dark theme */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            font-size: 2.2em;
+            margin-top: 20px;
+            color: #4CAF50;
+        }
+
+        p {
+            font-size: 1.1em;
+            color: #bbb;
+            margin-bottom: 20px;
+        }
+
+        video {
+            display: block;
+            margin: 20px auto;
+            max-width: 100%;
+            border-radius: 10px;
+            background: #333;
+        }
+
+        canvas {
+            display: block;
+            margin: 20px auto;
+            max-width: 100%;
+            border-radius: 10px;
+            background: #333;
+        }
+
+        #result, #counter, #slowDownMessage {
+            font-size: 1.2em;
+            margin-top: 15px;
+            color: #fff;
+        }
+
+        #counter {
+            font-size: 1.5em;
+            color: #4CAF50;
+        }
+
+        #slowDownMessage {
+            color: red;
+            font-weight: bold;
+        }
+
+        #modeSwitchButton {
+            margin-top: 30px;
+            padding: 12px 25px;
+            font-size: 1.1em;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #modeSwitchButton:hover {
+            background-color: #45a049;
+        }
+
+        /* Progress bar styles */
+        .progress-bar-container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 25px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0;
+            transition: width 0.3s ease;
+        }
+
+        /* Confetti container */
+        #confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+
+        #confetti img {
+            width: 300px;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Squat & Push-Up Validator</h1>
+    <p>Ensure your squats and push-ups are correct in real-time!</p>
+
+    <video id="video" autoplay muted playsinline width="640" height="480"></video>
+    <canvas id="output-canvas" width="640" height="480"></canvas>
+    
+    <div id="result"></div>
+    <div id="counter">Squats: 0 | Push-Ups: 0</div>
+    <div id="slowDownMessage"></div>
+    <button id="modeSwitchButton">Switch</button>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
+    <script src="script.js"></script>
+</body>
+</html>
