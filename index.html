@@ -5,20 +5,189 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Squat & Push-Up Validator</title>
     <style>
+        :root {
+            --primary-color: #00f7ff;
+            --secondary-color: #0099ff;
+            --background-color: #0a0a0f;
+            --surface-color: #12121f;
+            --text-color: #fff;
+            --gradient-dark: linear-gradient(135deg, #0a0a0f 0%, #12121f 100%);
+            --neon-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
+            --glass-effect: rgba(255, 255, 255, 0.1);
+        }
+
         /* General body styles for dark theme */
         body {
             font-family: Arial, sans-serif;
-            background-color: #121212;
-            color: #fff;
+            background-color: var(--background-color);
+            background-image: 
+                linear-gradient(45deg, rgba(0, 247, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(-45deg, rgba(0, 153, 255, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: center;
+            color: var(--text-color);
             text-align: center;
             margin: 0;
             padding: 0;
         }
 
         h1 {
-            font-size: 2.2em;
-            margin-top: 20px;
-            color: #4CAF50;
+            font-size: 3.5em;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 30px 0 10px;
+            filter: drop-shadow(0 0 8px rgba(0, 247, 255, 0.3));
+            animation: glowPulse 2s infinite;
+        }
+
+        /* Questionnaire styles */
+        #questionnaire {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease-in-out;
+            pointer-events: auto;
+        }
+
+        #questionnaire.hidden {
+            opacity: 0;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .question-container {
+            text-align: center;
+            padding: 1rem;
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+        }
+
+        .question {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            display: none;
+            filter: blur(10px);
+        }
+
+        .question.active {
+            opacity: 1;
+            transform: translate(-50%, -50%);
+            display: block;
+            filter: blur(0);
+            animation: questionIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .question.exit {
+            animation: questionOut 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .question h2 {
+            color: var(--primary-color);
+            font-size: 1.8em;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            padding: 0 10px;
+        }
+
+        .question h3 {
+            font-size: 1.2em;
+            margin: 10px 0;
+            color: var(--text-color);
+        }
+
+        .question input {
+            width: 90%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid var(--secondary-color);
+            border-radius: 8px;
+            background-color: rgba(0, 206, 209, 0.1);
+            color: var(--text-color);
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .question input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px rgba(0, 206, 209, 0.3);
+        }
+
+        .question button {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-color);
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .question button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 206, 209, 0.3);
+        }
+
+        /* Loading screen */
+        .loading-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-dark);
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--surface-color);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            margin-top: 15px;
+            color: var(--primary-color);
+            font-size: 1em;
+            padding: 0 20px;
+            text-align: center;
+        }
+
+        /* Main content styles */
+        #main-content {
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            position: relative;
+            z-index: 2;
         }
 
         p {
@@ -33,25 +202,66 @@
             max-width: 100%;
             border-radius: 10px;
             background: #333;
+            transform: scaleX(-1);
         }
 
         canvas {
             display: block;
-            margin: 20px auto;
             max-width: 100%;
             border-radius: 10px;
             background: #333;
+            transform: scaleX(-1);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scaleX(-1);
         }
 
-        #result, #counter, #slowDownMessage {
-            font-size: 1.2em;
-            margin-top: 15px;
-            color: #fff;
+        .video-container {
+            position: relative;
+            width: min(95vw, 640px);
+            height: auto;
+            aspect-ratio: 4/3;
+            margin: 10px auto;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 206, 209, 0.3);
+            border: 2px solid var(--primary-color);
+            background-color: var(--background-color);
+        }
+
+        video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100% !important;
+            height: 100% !important;
+            background: #333;
+            transform: scaleX(-1);
+        }
+
+        #result, #counter, #slowDownMessage, #modeMessage {
+            font-size: 1em;
+            margin: 10px 0;
+            padding: 0 10px;
+            color: var(--text-color);
+            position: relative;
+            z-index: 2;
         }
 
         #counter {
-            font-size: 1.5em;
-            color: #4CAF50;
+            font-size: 1.2em;
+            color: var(--primary-color);
         }
 
         #slowDownMessage {
@@ -60,73 +270,445 @@
         }
 
         #modeSwitchButton {
-            margin-top: 30px;
-            padding: 12px 25px;
-            font-size: 1.1em;
-            background-color: #4CAF50;
-            color: white;
+            margin: 20px 0;
+            padding: 10px 20px;
+            font-size: 1em;
+            background-color: var(--primary-color);
+            color: var(--text-color);
             border: none;
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s ease;
+            position: relative;
+            z-index: 2;
         }
 
         #modeSwitchButton:hover {
-            background-color: #45a049;
+            opacity: 0.9;
         }
 
         /* Progress bar styles */
         .progress-bar-container {
-            width: 80%;
-            margin: 20px auto;
-            background-color: #333;
-            border-radius: 10px;
+            width: 90%;
+            max-width: 300px;
+            height: 12px;
+            margin: 15px auto;
+            background-color: rgba(0, 206, 209, 0.1);
+            border-radius: 8px;
             overflow: hidden;
-            height: 25px;
+            position: relative;
+            z-index: 2;
         }
 
         .progress-bar {
             height: 100%;
-            background-color: #4CAF50;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             width: 0;
             transition: width 0.3s ease;
         }
 
-        /* Confetti container */
-        #confetti {
-            position: fixed;
+        /* User info display */
+        #user-info {
+            background-color: #1E1E1E;
+            padding: 8px;
+            border-radius: 10px;
+            margin: 15px auto;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            z-index: 2;
+            font-size: 0.9em;
+        }
+
+        /* Mode message update */
+        #modeMessage {
+            color: var(--primary-color);
+            font-size: 1.2em;
+            margin-top: 20px;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeInUp 0.5s forwards;
+            position: relative;
+            z-index: 2;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .next-button {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-color);
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            margin-top: 15px;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .next-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 206, 209, 0.3);
+        }
+
+        .question input {
+            margin-bottom: 10px;
+        }
+
+        canvas {
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
+            background: #333;
+            transform: scaleX(-1);
         }
 
-        #confetti img {
-            width: 300px;
-            height: 300px;
+        /* Add a wrapper for main content */
+        .content-wrapper {
+            position: relative;
+            z-index: 3;
+        }
+
+        #main-content {
+            position: relative;
+            background-color: var(--background-color);
+        }
+
+        /* Tablet and larger screens */
+        @media (min-width: 768px) {
+            h1 {
+                font-size: 2.2em;
+            }
+
+            .question h2 {
+                font-size: 2.5em;
+            }
+
+            .question h3 {
+                font-size: 1.4em;
+            }
+
+            .question input {
+                font-size: 1.1em;
+            }
+
+            #result, #counter, #slowDownMessage, #modeMessage {
+                font-size: 1.2em;
+            }
+
+            #counter {
+                font-size: 1.5em;
+            }
+
+            #plankTimer {
+                font-size: 2em !important;
+            }
+
+            .loading-spinner {
+                width: 50px;
+                height: 50px;
+            }
+
+            .loading-text {
+                font-size: 1.2em;
+            }
+        }
+
+        /* Desktop screens */
+        @media (min-width: 1024px) {
+            .video-container {
+                width: 640px;
+            }
+
+            .question-container {
+                padding: 2rem;
+            }
+
+            .question input {
+                width: 80%;
+            }
+        }
+
+        /* Handle very small screens */
+        @media (max-width: 320px) {
+            h1 {
+                font-size: 1.5em;
+            }
+
+            #counter {
+                font-size: 1em;
+            }
+
+            .question h2 {
+                font-size: 1.5em;
+            }
+
+            .question input {
+                width: 95%;
+                padding: 8px;
+            }
+        }
+
+        /* Ensure text doesn't overflow on small screens */
+        * {
+            word-wrap: break-word;
+            box-sizing: border-box;
+        }
+
+        /* Add some padding to the body for small screens */
+        body {
+            padding: 10px;
+        }
+
+        /* Mobile specific adjustments */
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
+
+            .video-container {
+                width: 90vw;
+                margin: 8px auto;
+            }
+
+            /* Adjust other container widths for mobile */
+            #user-info, .progress-bar-container {
+                width: 90vw;
+                max-width: none;
+            }
+        }
+
+        /* Very small screens */
+        @media (max-width: 320px) {
+            .video-container {
+                width: 95vw;
+                margin: 5px auto;
+            }
+        }
+
+        @keyframes questionIn {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, calc(-50% + 50px));
+                filter: blur(10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+                filter: blur(0);
+            }
+        }
+
+        @keyframes questionOut {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+                filter: blur(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, calc(-50% - 50px));
+                filter: blur(10px);
+            }
+        }
+
+        /* Add glowing pulse animation */
+        @keyframes glowPulse {
+            0% { filter: drop-shadow(0 0 8px rgba(0, 247, 255, 0.3)); }
+            50% { filter: drop-shadow(0 0 15px rgba(0, 247, 255, 0.5)); }
+            100% { filter: drop-shadow(0 0 8px rgba(0, 247, 255, 0.3)); }
+        }
+
+        /* Update video container with futuristic border */
+        .video-container {
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 0 20px rgba(0, 247, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .video-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border: 2px solid transparent;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            -webkit-mask: 
+                linear-gradient(#fff 0 0) content-box, 
+                linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            animation: borderRotate 4s linear infinite;
+        }
+
+        @keyframes borderRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Update button styles */
+        #modeSwitchButton {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            letter-spacing: 1px;
+            color: var(--background-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 247, 255, 0.3);
+            text-transform: uppercase;
+        }
+
+        #modeSwitchButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(0, 247, 255, 0.5);
+        }
+
+        /* Update counter display */
+        #counter {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
+            margin: 20px 0;
+        }
+
+        /* Add glass-morphism effect to user info */
+        #user-info {
+            background: rgba(18, 18, 31, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 247, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 20px auto;
+            box-shadow: 0 0 20px rgba(0, 247, 255, 0.1);
+        }
+
+        /* Update progress bar */
+        .progress-bar-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(0, 247, 255, 0.2);
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            box-shadow: 0 0 15px rgba(0, 247, 255, 0.3);
         }
     </style>
 </head>
 <body>
-    <h1>Squat & Push-Up Validator</h1>
-    <p>Ensure your squats and push-ups are correct in real-time!</p>
+    <div class="content-wrapper">
+        <!-- Questionnaire Section -->
+        <div id="questionnaire">
+            <div class="question-container">
+                <div class="question" id="welcome">
+                    <h2>Before we begin...</h2>
+                </div>
+                <div class="question" id="nameQuestion">
+                    <h3>What's your name?</h3>
+                    <input type="text" id="userName" placeholder="Enter your name">
+                </div>
+                <div class="question" id="ageQuestion">
+                    <h3>How old are you?</h3>
+                    <input type="number" id="userAge" placeholder="Enter your age">
+                </div>
+                <div class="question" id="weightQuestion">
+                    <h3>What's your current weight?</h3>
+                    <input type="number" id="userWeight" placeholder="Weight in kg">
+                </div>
+                <div class="question" id="goalQuestion">
+                    <h3>What's your goal weight?</h3>
+                    <input type="number" id="goalWeight" placeholder="Goal weight in kg">
+                    <button onclick="submitQuestionnaire()">Let's Begin!</button>
+                </div>
+            </div>
+        </div>
 
-    <video id="video" autoplay muted playsinline width="640" height="480"></video>
-    <canvas id="output-canvas" width="640" height="480"></canvas>
-    
-    <div id="result"></div>
-    <div id="counter">Squats: 0 | Push-Ups: 0</div>
-    <div id="slowDownMessage"></div>
-    <button id="modeSwitchButton">Switch</button>
+        <!-- Add loading screen -->
+        <div class="loading-screen">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Please hold on tight while we set things up...</div>
+        </div>
 
+        <!-- Main Content -->
+        <div id="main-content">
+            <h1>GymBot</h1>
+            <div id="user-info"></div>
+            <p>Your AI-powered personal trainer for perfect form and technique!</p>
+
+            <div class="progress-bar-container">
+                <div class="progress-bar"></div>
+            </div>
+
+            <div class="video-container">
+                <video id="video" autoplay muted playsinline width="640" height="480" style="display: none;"></video>
+                <canvas id="output-canvas" width="640" height="480"></canvas>
+            </div>
+            
+            <div id="result"></div>
+            <div id="counter">Squats: 0 | Push-Ups: 0</div>
+            <div id="slowDownMessage"></div>
+            <div id="modeMessage">Squat mode active</div>
+            <button id="modeSwitchButton">Switch</button>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
     <script src="script.js"></script>
+    <script>
+    // Get all questions
+    const questions = document.querySelectorAll('.question');
+
+    // Initially show only the first question
+    questions[0].classList.add('active');
+
+    // Function to show next question
+    function showNextQuestion(currentQuestion) {
+        const current = document.querySelector(`#${currentQuestion}`);
+        const currentIndex = Array.from(questions).indexOf(current);
+        
+        if (currentIndex < questions.length - 1) {
+            // Add exit animation to current question
+            current.classList.add('exit');
+            
+            // After exit animation, hide current and show next
+            setTimeout(() => {
+                current.classList.remove('active', 'exit');
+                questions[currentIndex + 1].classList.add('active');
+            }, 800); // Match this with animation duration
+        }
+    }
+
+    // Add event listeners to inputs to advance to next question on Enter key
+    document.querySelectorAll('.question input').forEach(input => {
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                showNextQuestion(this.closest('.question').id);
+            }
+        });
+    });
+    </script>
 </body>
 </html>
