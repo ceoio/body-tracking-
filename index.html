@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gymbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0a0a0f 0%, #12121f 100%);
+            transition: background 2s ease-in-out;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            opacity: 1;
+            transition: opacity 2s ease-in-out;
+            position: relative;
+            width: 100%;
+            height: auto;
+            padding: 20px;
+        }
+
+        .logo-container {
+            position: relative;
+            width: min(300px, 90vw);
+            height: min(400px, 50vh);
+            margin: 8rem auto 2rem auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo-part {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            height: auto;
+            filter: blur(8px);
+            transition: all 2s cubic-bezier(0.4, 0.0, 0.2, 1);
+            opacity: 0;
+            width: min(150px, 45vw);
+        }
+
+        .logo-left {
+            z-index: 2;
+            transform: translate(-200%, -50%);
+            filter: blur(8px);
+            width: 150px;
+        }
+
+        .logo-middle {
+            z-index: 3;
+            transform: translate(100%, -50%);
+            filter: blur(8px);
+            width: 150px;
+        }
+
+        .logo-back {
+            z-index: 1;
+            transform: translate(100%, -50%);
+            filter: blur(0px);
+            width: 100px;
+        }
+
+        .logo-top {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: min(300px, 80vw);
+            height: auto;
+            filter: blur(8px);
+            opacity: 0;
+            transition: all 2s cubic-bezier(0.4, 0.0, 0.2, 1);
+            z-index: 10;
+            transform-origin: center center;
+        }
+
+        .animate .logo-left {
+            transform: translate(-50%, -50%);
+            filter: blur(0px);
+            opacity: 1;
+        }
+
+        .animate .logo-middle {
+            z-index: -5;
+            transform: translate(-50%, 85%);
+            filter: blur(0px);
+            opacity: 0.9;
+            animation: softGlow 2s ease-in-out infinite;
+        }
+
+        .animate .logo-back {
+            transform: translate(-50%, -50%);
+            filter: blur(0px);
+            opacity: 1;
+        }
+
+        .animate .logo-corner-left {
+            bottom: 20px;
+            left: 20px;
+            filter: blur(0px);
+            opacity: 1;
+        }
+
+        .animate .logo-corner-right {
+            top: 20px;
+            right: 20px;
+            filter: blur(0px);
+            opacity: 1;
+        }
+
+        .animate .logo-top {
+            position: absolute;
+            filter: blur(0px);
+            opacity: 1;
+            transform: translate(-50%, -140%);
+        }
+
+        .gymbot-btn {
+            margin-top: 30px;
+            padding: 12px 30px;
+            font-size: clamp(1rem, 4vw, 1.5rem);
+            font-weight: bold;
+            color: #ffffff;
+            background-color: #B94E48;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .gymbot-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(185, 78, 72, 0.3);
+        }
+
+        .dark-theme {
+            background: linear-gradient(135deg, #0a0a0f 0%, #12121f 100%);
+        }
+
+        .fade-out {
+            opacity: 0 !important;
+            pointer-events: none;
+            transition: opacity 1.5s ease-in-out !important;
+        }
+
+        @keyframes glow {
+            0% { filter: blur(20px) brightness(0.8); }
+            50% { filter: blur(15px) brightness(1.2); }
+            100% { filter: blur(20px) brightness(0.8); }
+        }
+
+        @keyframes softGlow {
+            0% { filter: blur(3px) brightness(1); }
+            50% { filter: blur(5px) brightness(1.2); }
+            100% { filter: blur(3px) brightness(1); }
+        }
+
+        .logo-corner-left, .logo-corner-right, 
+        .animate .logo-corner-left, .animate .logo-corner-right {
+            display: none;
+        }
+
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 1;
+            transition: opacity 2s ease-in-out;
+        }
+
+        .particle.visible {
+            opacity: 0.4;
+        }
+
+        @media (max-width: 768px) {
+            .logo-container {
+                margin: 6rem auto 1rem auto;
+            }
+
+            .logo-top {
+                top: 20%;
+                width: min(250px, 85vw);
+            }
+
+            .animate .logo-top {
+                transform: translate(-50%, -120%);
+            }
+        }
+
+        @media (max-height: 600px) {
+            .logo-container {
+                margin: 4rem auto 1rem auto;
+            }
+
+            .logo-top {
+                top: 15%;
+            }
+        }
+
+        #exercise-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+            align-items: center;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            font-size: 1.2em;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .gymbot-btn {
+            background: linear-gradient(135deg, #1e3c72 0%, #B94E48 100%) !important;
+        }
+
+        #modeSwitchButton {
+            background: linear-gradient(135deg, #1e3c72 0%, #B94E48 100%) !important;
+            border: none;
+            padding: 12px 24px;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        #modeSwitchButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(30, 60, 114, 0.3);
+        }
+
+        #plankTimer {
+            background: linear-gradient(135deg, #1e3c72 0%, #B94E48 100%);
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-weight: bold;
+            color: white !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            #exercise-stats {
+                width: 90%;
+                max-width: 400px;
+            }
+
+            .stat-box {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <img src="topmiddlecenter.png" alt="Logo Top" class="logo-top">
+    
+    <div class="container">
+        <div class="logo-container">
+            <img src="middlelogo.png" alt="Logo Front" class="logo-part logo-left">
+            <img src="middle.png" alt="AI Brain Logo" class="logo-part logo-middle">
+            <img src="middlecenterbehindlogo.png" alt="Logo Back" class="logo-part logo-back">
+        </div>
+        <button class="gymbot-btn" onclick="startTransition()">GYMBOT</button>
+    </div>
+
+
+    <script>
+        // Trigger animation when page loads
+        window.addEventListener('load', () => {
+            createParticles();
+            setTimeout(() => {
+                document.querySelector('.logo-container').classList.add('animate');
+                document.body.classList.add('animate');
+            }, 100);
+        });
+
+        function createParticles() {
+            const particleCount = 6; // Number of each type of particle
+            const images = ['leftcornerbottom.png', 'rightcornerbottom.png'];
+            
+            images.forEach(imgSrc => {
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('img');
+                    particle.src = imgSrc;
+                    particle.className = 'particle';
+                    particle.style.width = Math.random() * 40 + 20 + 'px'; // Random size between 20-60px
+                    
+                    // Random position
+                    particle.style.left = Math.random() * 100 + 'vw';
+                    particle.style.top = Math.random() * 100 + 'vh';
+                    
+                    // Random rotation
+                    particle.style.transform = `rotate(${Math.random() * 360}deg)`;
+                    
+                    document.body.appendChild(particle);
+                    
+                    // Fade in after a random delay
+                    setTimeout(() => {
+                        particle.classList.add('visible');
+                    }, Math.random() * 2000);
+
+                    // Floating animation
+                    setInterval(() => {
+                        const newX = Math.random() * 100 + 'vw';
+                        const newY = Math.random() * 100 + 'vh';
+                        const newRotation = Math.random() * 360;
+                        
+                        particle.style.transition = 'all 10s ease-in-out';
+                        particle.style.left = newX;
+                        particle.style.top = newY;
+                        particle.style.transform = `rotate(${newRotation}deg)`;
+                    }, 2500);
+                }
+            });
+        }
+
+        function startTransition() {
+            document.querySelector('.container').classList.add('fade-out');
+            document.querySelector('.logo-top').classList.add('fade-out');
+            
+            document.querySelectorAll('.particle').forEach(particle => {
+                particle.style.transition = 'opacity 1.5s ease-in-out';
+                particle.style.opacity = '0';
+            });
+            
+            setTimeout(() => {
+                document.body.classList.add('dark-theme');
+                setTimeout(() => {
+                    window.location.href = 'gymbot.html';
+                }, 3000);
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
